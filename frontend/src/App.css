@@ -1,38 +1,72 @@
-.App {
-  text-align: center;
+/* src/App.css */
+
+/* ... 其他樣式 ... */
+.reset-button {
+  position: absolute;
+  z-index: 10;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  color: #666;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.reset-button:hover {
+  color: #333;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.reset-x {
+  bottom: 2px;
+  right: 11%;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+/* .reset-y {
+  top: 50%;
+  right: 2px;
+  transform: translateY(-50%);
+} */
+
+.volume-slider-container {
+  position: relative;
+  width: 20px;
+  height: 600px;
+  margin-right: 10px;
 }
 
-.App-link {
-  color: #61dafb;
+.volume-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 600px;
+  height: 20px;
+  transform-origin: top left;
+  transform: rotate(-90deg) translateX(-100%);
+  -webkit-appearance: none;
+  appearance: none;
+  background: #ddd;
+  outline: none;
+  border-radius: 10px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  background: #4CAF50;
+  border-radius: 50%;
+  cursor: pointer;
+}
+/* 新增：Y 軸 dataZoom 和重置按鈕容器樣式 */
+.y-zoom-container {
+  position: absolute;
+  top: 10%;      /* 與 grid.top 對齊 */
+  right: 2px;    /* 與 Y 軸 dataZoom 對齊 */
+  bottom: 15%;   /* 與 grid.bottom 對齊 */
+  display: flex; /* 使用 Flexbox */
+  flex-direction: column-reverse; /* 從下往上排列 */
+  align-items: center;      /* 水平居中 */
+  width: 20px;             /* 與 dataZoom 同寬 */
+
 }
