@@ -1,18 +1,16 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import * as echarts from 'echarts';
 
-// Use forwardRef to forward the ref from App to the internal chartRef
 const StockChart = forwardRef(({ chartData, companyNameZh, stockCode, volumeMax, volumeRangeValue, maDays }, ref) => {
-    const chartRef = useRef(null); // Ref for the chart DOM element
+    const chartRef = useRef(null);
 
-    // Expose methods to the parent component using useImperativeHandle
     useImperativeHandle(ref, () => ({
         resetXZoom: () => {
             if (chartRef.current) {
                 const myChart = echarts.getInstanceByDom(chartRef.current);
                 myChart.dispatchAction({
                     type: 'dataZoom',
-                    dataZoomIndex: [0, 1], // X-axis dataZooms
+                    dataZoomIndex: [0, 1],
                     start: 0,
                     end: 100
                 });
@@ -23,7 +21,7 @@ const StockChart = forwardRef(({ chartData, companyNameZh, stockCode, volumeMax,
                 const myChart = echarts.getInstanceByDom(chartRef.current);
                 myChart.dispatchAction({
                     type: 'dataZoom',
-                    dataZoomIndex: [2, 3], // Y-axis dataZooms
+                    dataZoomIndex: [2, 3],
                     start: 0,
                     end: 100
                 });
@@ -36,7 +34,7 @@ const StockChart = forwardRef(({ chartData, companyNameZh, stockCode, volumeMax,
 
         let initialVolumeMax = 1000;
         if (chartData && chartData.volumes) {
-            initialVolumeMax = Math.max(...chartData.volumes) * 1.2; // Calculate max volume
+            initialVolumeMax = Math.max(...chartData.volumes) * 1.2;
         }
 
         const option = {
@@ -51,7 +49,7 @@ const StockChart = forwardRef(({ chartData, companyNameZh, stockCode, volumeMax,
                 }
             },
             legend: {
-                data: ['K線', '成交量', `MA${maDays}`],
+                data: ['K線', '成交量', 'MA5', 'MA10', 'MA15', 'MA20'], // 添加 MA Legend
                 top: '5%',
                 left: '10%'
             },
@@ -149,16 +147,47 @@ const StockChart = forwardRef(({ chartData, companyNameZh, stockCode, volumeMax,
                     data: chartData ? chartData.volumes : [],
                     yAxisIndex: 1
                 },
+                 // 多條 MA 線
                 {
-                    name: `MA${maDays}`,
+                    name: 'MA5',
                     type: 'line',
-                    data: chartData ? chartData[`ma${maDays}`] : [],
+                    data: chartData ? chartData.ma5 : [],
                     smooth: true,
                     showSymbol: false,
                     lineStyle: {
                         width: 1
                     }
-                }
+                },
+                {
+                    name: 'MA10',
+                    type: 'line',
+                    data: chartData ? chartData.ma10 : [],
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                },
+                {
+                    name: 'MA15',
+                    type: 'line',
+                    data: chartData ? chartData.ma15 : [],
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                },
+                {
+                    name: 'MA20',
+                    type: 'line',
+                    data: chartData ? chartData.ma20 : [],
+                    smooth: true,
+                    showSymbol: false,
+                    lineStyle: {
+                        width: 1
+                    }
+                },
             ]
         };
 
@@ -173,7 +202,8 @@ const StockChart = forwardRef(({ chartData, companyNameZh, stockCode, volumeMax,
             window.removeEventListener('resize', resizeChart);
             myChart.dispose();
         };
-    }, [chartData, companyNameZh, stockCode, volumeMax, volumeRangeValue, maDays]);
+// }, [chartData, companyNameZh, stockCode, volumeMax, volumeRangeValue, maDays]); //這是錯的
+   }, [chartData, companyNameZh, stockCode, volumeMax, volumeRangeValue]); // 修正後的依賴項
 
     return <div ref={chartRef} style={{ width: '100%', height: '600px' }}></div>;
 });

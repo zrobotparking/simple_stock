@@ -5,14 +5,8 @@ import { faUndo } from '@fortawesome/free-solid-svg-icons';
 function Controls({
     stockCode,
     setStockCode,
-    dateRange,
-    setDateRange,
-    startDate,
-    setStartDate,
-    maDays,
-    setMaDays,
     handleSubmit,
-    chartRef // Receive chartRef
+    chartRef
 }) {
     const handleKeyDown = (event) => {
         if (event.key === 'Enter') {
@@ -20,7 +14,6 @@ function Controls({
         }
     };
 
-    // Get the reset functions from the chartRef
     const resetXZoom = () => {
         if (chartRef.current && chartRef.current.resetXZoom) {
             chartRef.current.resetXZoom();
@@ -28,7 +21,7 @@ function Controls({
     };
 
     const resetYZoom = () => {
-       if (chartRef.current && chartRef.current.resetYZoom) {
+        if (chartRef.current && chartRef.current.resetYZoom) {
             chartRef.current.resetYZoom();
         }
     };
@@ -45,38 +38,9 @@ function Controls({
                 />
                 <button onClick={handleSubmit}>查詢</button>
             </div>
-            <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                <label>
-                    日期區間:
-                    <input
-                        type="number"
-                        value={dateRange}
-                        onChange={(e) => setDateRange(Math.max(1, parseInt(e.target.value)))}
-                        style={{ width: '60px', marginLeft: '5px' }}
-                    />
-                    天
-                </label>
-                <label style={{ marginLeft: '20px' }}>
-                    起始日期:
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        style={{ marginLeft: '5px' }}
-                    />
-                </label>
-                <label style={{ marginLeft: '20px' }}>
-                    MA 天數:
-                    <input
-                        type="number"
-                        value={maDays}
-                        onChange={(e) => setMaDays(Math.max(1, parseInt(e.target.value)))}
-                        style={{ width: '60px', marginLeft: '5px' }}
-                    />
-                </label>
-            </div>
+            {/* 移除日期區間、起始日期和 MA 天數的輸入框 */}
             <div className="y-zoom-container">
-                 <button className="reset-button reset-y" onClick={resetYZoom}>
+                <button className="reset-button reset-y" onClick={resetYZoom}>
                     <FontAwesomeIcon icon={faUndo} />
                 </button>
             </div>

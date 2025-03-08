@@ -10,145 +10,78 @@ function App() {
     const [companyNameZh, setCompanyNameZh] = useState('');
     const [chartData, setChartData] = useState(null);
     const [history, setHistory] = useState([]);
-    const [dateRange, setDateRange] = useState(180);
-    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+    // const [dateRange, setDateRange] = useState(180);   // 移除
+    // const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]); // 移除
     const [volumeMax, setVolumeMax] = useState(null);
     const [volumeRangeValue, setVolumeRangeValue] = useState(50);
-    const [maDays, setMaDays] = useState(5);
-    const chartRef = useRef(null); // Ref to hold the StockChart instance
+    // const [maDays, setMaDays] = useState(5);        // 移除
+    const chartRef = useRef(null);
 
+    const handleSubmit = useCallback(async () => {
+        try {
+            // const endDate = new Date(startDate);  // 移除
+            // const realStartDate = new Date(endDate.getTime() - (dateRange - 1) * 24 * 60 * 60 * 1000); // 移除
+            // const startDateStr = realStartDate.toISOString().split('T')[0]; // 移除
+            // const endDateStr = endDate.toISOString().split('T')[0]; // 移除
 
-    const handleSubmit = async () => {
-      try {
-          const endDate = new Date(startDate);
-          const realStartDate = new Date(endDate.getTime() - (dateRange - 1) * 24 * 60 * 60 * 1000);
-          const startDateStr = realStartDate.toISOString().split('T')[0];
-          const endDateStr = endDate.toISOString().split('T')[0];
-  
-          const requestUrl = `/api/stock/${stockCode}?start=${startDateStr}&end=${endDateStr}&ma=${maDays}`;
-          console.log('Request URL:', requestUrl);
-  
-          // 告訴 axios 不要自動解析 JSON，而是返回原始文本
-          const response = await axios.get(requestUrl, {
-              responseType: 'text' // 重要：獲取原始文本
-          });
-  
-          console.log('Response from backend:', response);
-          let jsonData;
-          try {
-              // 手動解析 JSON
-              jsonData = JSON.parse(response.data);
-              console.log('Parsed JSON data:', jsonData);
-          } catch (parseError) {
-              console.error("Error parsing JSON:", parseError);
-              console.error("Raw response data:", response.data); // 輸出原始回應內容
-              alert("從伺服器接收到的資料無法解析為 JSON。");
-              return;
-          }
-  
-          // --- 嚴格的檢查開始 (現在檢查 jsonData) ---
-          if (!jsonData) {
-              console.error("Error: jsonData is undefined or null.");
-              alert("從伺服器接收到的資料無效 (jsonData 為空)。");
-              return;
-          }
-  
-          if (typeof jsonData !== 'object') {
-              console.error("Error: jsonData is not an object.", jsonData);
-              alert("從伺服器接收到的資料格式不正確 (jsonData 不是物件)。");
-              return;
-          }
-  
-          if (!jsonData.hasOwnProperty('kData')) {
-              console.error("Error: jsonData.kData is missing.", jsonData);
-              alert("從伺服器接收到的資料缺少 kData 屬性。");
-              return;
-          }
-  
-          // ... (其餘對 jsonData.volumes, jsonData.dates, jsonData.ma${maDays} 的檢查) ...
-          if (!jsonData.hasOwnProperty('volumes')) {
-              console.error("Error: jsonData.volumes is missing.", jsonData);
-              alert("從伺服器接收到的資料缺少 volumes 屬性。");
-              return;
-          }
-           if (!jsonData.hasOwnProperty('dates')) {
-              console.error("Error: jsonData.dates is missing.", jsonData);
-              alert("從伺服器接收到的資料缺少 dates 屬性。");
-              return;
-          }
-  
-          if (!Array.isArray(jsonData.kData)) {
-              console.error("Error: jsonData.kData is not an array.", jsonData.kData);
-              alert("從伺服器接收到的 kData 不是陣列。");
-              return;
-          }
-  
-          if (!Array.isArray(jsonData.volumes)) {
-              console.error("Error: jsonData.volumes is not an array.", jsonData.volumes);
-              alert("從伺服器接收到的 volumes 不是陣列。");
-              return;
-          }
-          if (!Array.isArray(jsonData.dates)) {
-              console.error("Error: jsonData.dates is not an array.", jsonData.dates);
-              alert("從伺服器接收到的 dates 不是陣列。");
-              return;
-          }
-            if (!jsonData.hasOwnProperty(`ma${maDays}`)) {
-              console.error(`Error: jsonData.ma${maDays} is missing.`, jsonData);
-              alert(`從伺服器接收到的資料缺少 ma${maDays} 屬性。`);
-              return;
-          }
-  
-          if (!Array.isArray(jsonData[`ma${maDays}`])) {
-              console.error(`Error: jsonData.ma${maDays} is not an array.`, jsonData[`ma${maDays}`]);
-              alert(`從伺服器接收到的 ma${maDays} 不是陣列。`);
-              return;
-          }
-  
-          // --- 檢查結束 ---
-          setCompanyNameZh(jsonData.companyNameZh);
-          // setCompanyNameEn(jsonData.companyNameEn);  英文名稱先不處理
-  
-          const kData = jsonData.kData.map(item => item.map(value => parseFloat(value)));
-          const volumes = jsonData.volumes.map(vol => parseInt(vol, 10));
-  
-          const newData = {
-              dates: jsonData.dates,
-              kData: kData,
-              volumes: volumes,
-          };
-          newData[`ma${maDays}`] = jsonData[`ma${maDays}`];
-          setChartData(newData);
-  
-          setVolumeMax(null);
-          setVolumeRangeValue(50);
-  
-          setHistory(prevHistory => {
-              const newHistory = [{ code: stockCode, name: response.data.companyNameZh }, ...prevHistory];
-              const uniqueHistory = [];
-              const seen = new Set();
-              for (const item of newHistory) {
-                  if (!seen.has(item.code)) {
-                      uniqueHistory.push(item);
-                      seen.add(item.code);
-                  }
-              }
-              return uniqueHistory.slice(0, 10);
-          });
-      } catch (error) {
-              console.error("獲取股票資料錯誤", error);
-              if (error.response) {
-                  console.error('Error Response Data:', error.response.data);
-                  console.error('Error Response Status:', error.response.status);
-                  console.error('Error Response Headers:', error.response.headers);
-              } else if (error.request) {
-                  console.error('Error Request:', error.request);
-              } else {
-                  console.error('Error Message:', error.message);
-              }
-              alert("獲取股票資料錯誤，請確認股票代碼是否正確。");
-      }
-  };
+            // const requestUrl = `/api/stock/${stockCode}?start=${startDateStr}&end=${endDateStr}&ma=${maDays}`; //移除ma
+            const requestUrl = `/api/stock/${stockCode}`; // 現在只傳遞 stockCode
+            console.log('Request URL:', requestUrl);
+
+            const response = await axios.get(requestUrl);
+            console.log('Response from backend:', response);
+
+            if (!response.data || typeof response.data !== 'object' ||
+                !response.data.hasOwnProperty('kData') || !Array.isArray(response.data.kData) ||
+                !response.data.hasOwnProperty('volumes') || !Array.isArray(response.data.volumes) ||
+                !response.data.hasOwnProperty('dates') || !Array.isArray(response.data.dates) ||
+                !response.data.hasOwnProperty('ma5') || !Array.isArray(response.data.ma5) ||
+                !response.data.hasOwnProperty('ma10') || !Array.isArray(response.data.ma10)||
+                !response.data.hasOwnProperty('ma15') || !Array.isArray(response.data.ma15)||
+                !response.data.hasOwnProperty('ma20') || !Array.isArray(response.data.ma20)) {
+                console.error("Error: Invalid data received from backend.", response.data);
+                alert("從伺服器接收到的資料格式不正確。");
+                return;
+            }
+
+            setCompanyNameZh(response.data.companyNameZh);
+
+            const kData = response.data.kData.map(item => item.map(value => parseFloat(value)));
+            const volumes = response.data.volumes.map(vol => parseInt(vol, 10));
+
+            const newData = {
+                dates: response.data.dates,
+                kData: kData,
+                volumes: volumes,
+                ma5: response.data.ma5,
+                ma10: response.data.ma10,
+                ma15: response.data.ma15,
+                ma20: response.data.ma20,
+            };
+            console.log("newData:", newData);
+            setChartData(newData);
+
+            setVolumeMax(null);
+            setVolumeRangeValue(50);
+
+            setHistory(prevHistory => {
+                const newHistory = [{ code: stockCode, name: response.data.companyNameZh }, ...prevHistory];
+                const uniqueHistory = [];
+                const seen = new Set();
+                for (const item of newHistory) {
+                    if (!seen.has(item.code)) {
+                        uniqueHistory.push(item);
+                        seen.add(item.code);
+                    }
+                }
+                return uniqueHistory.slice(0, 10);
+            });
+        } catch (error) {
+            console.error("獲取股票資料錯誤", error);
+            alert("獲取股票資料錯誤，請確認股票代碼是否正確。");
+        }
+    }, [stockCode, setHistory]);  // 簡化依賴項
+
     const handleSelectStock = useCallback((code, name) => {
         setStockCode(code);
         setCompanyNameZh(name);
@@ -166,18 +99,12 @@ function App() {
                 <Controls
                     stockCode={stockCode}
                     setStockCode={setStockCode}
-                    dateRange={dateRange}
-                    setDateRange={setDateRange}
-                    startDate={startDate}
-                    setStartDate={setStartDate}
-                    maDays={maDays}
-                    setMaDays={setMaDays}
                     handleSubmit={handleSubmit}
-                    chartRef={chartRef} // Pass the chartRef to Controls
+                    chartRef={chartRef}
                 />
 
                 <div style={{ display: 'flex' }}>
-                     <div className="volume-slider-container">
+                    <div className="volume-slider-container">
                         <input
                             type="range"
                             min="1"
@@ -193,8 +120,7 @@ function App() {
                         stockCode={stockCode}
                         volumeMax={volumeMax}
                         volumeRangeValue={volumeRangeValue}
-                        maDays={maDays}
-                        ref={chartRef} // Pass the ref to StockChart
+                        ref={chartRef}
                     />
                 </div>
 
