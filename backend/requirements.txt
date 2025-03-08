@@ -1,6 +1,0 @@
-Flask
-Flask-Cors
-yfinance
-pandas
-numpy
-TA-Lib
